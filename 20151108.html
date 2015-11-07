@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+This file is part of "MPS Setagaya Pacman."
+
+MPS Setagaya Pacman is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+MPS Setagaya Pacman is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+
+(c) Junya Kaneko <jyuneko@hotmail.com>
+-->
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="pacman.js"></script> <!-- Pacman のコンストラクタが定義されているファイルを読み込み。 -->
+    <script src="akabei.js"></script> <!-- Akabei のコンストラクタが定義されているファイルを読み込み。 -->
+    <script src="map001.js"></script> <!-- map001 のコンストラクタが定義されているファイルを読み込み。 -->
+</head>
+<body>
+<canvas id="pac-man" width="640" height="640"></canvas> <!-- キャンバスを作成。ここにゲームが描画される。 -->
+<script>
+    // キャンバスとそのキャンバスのコンテクストを取得。
+    var cv = document.getElementById('pac-man');
+    var ctx = cv.getContext("2d");
+
+    // マップのインスタンスを作成。
+    var map = new Map(0, 0, 20, 20, '#0000FF');
+
+    // パックマンのインスタンスを作成。
+    var pacman = new Pacman(8, 40, 30, map, 1, 1);
+
+    // キャンバスをフォーカスできるように設定。
+    cv.tabIndex = 1;
+
+    // キャンバスに対して、キーが押された時の処理方法を設定。
+    cv.onkeydown = function(event) {
+        event.preventDefault(); // ブラウザによって設定されているデフォルトの動作を無効化。
+
+        // JavaScript では、キーボードのキーそれぞれに整数値が割り当てられており、
+        // 押されたキーの番号が event オブジェクトの keyCode 属性にセットされる。
+        switch(event.keyCode) {
+            case 37: // キーボードの左ボタンが押された。
+                pacman.goLeft();
+                break;
+            case 38: // キーボードの上ボタンが押された。
+                pacman.goUp();
+                break;
+            case 39: // キーボードの右ボタンが押された。
+                pacman.goRight();
+                break;
+            case 40: // キーボードの下ボタンが押された。
+                pacman.goDown();
+                break;
+        }
+    };
+
+    // ゲーム画面を描画して進行させる関数。
+    // window.requestAnimationFrame メソッドから呼び出される。
+    var previousDrawingTime = 0;
+    function mainLoop(timestamp) {
+        if(previousDrawingTime == 0) {
+            previousDrawingTime = timestamp;
+        }
+
+        var duration = timestamp - previousDrawingTime; // 前回の描画からの経過時間 (ms)
+
+        ctx.beginPath();
+        ctx.fillStyle = '#000000';
+        ctx.strokeStyle = '#0000FF';
+        ctx.rect(0, 0, cv.width, cv.height); // 一つ前のフレームに描画された画面を消去。
+        ctx.fill();
+        ctx.stroke();
+
+        map.draw(ctx); // マップを描画。
+
+        pacman.move(duration); // パックマンを移動させる。
+        pacman.draw(ctx); // パックマンを描画。
+
+        previousDrawingTime = timestamp; // 描画した時刻の更新。
+        window.requestAnimationFrame(mainLoop); // 次のフレームの描画をブラウザに依頼。
+    }
+
+    // ブラウザに mainLoop 関数を用いてゲーム画面の描画をするように依頼。
+    // 描画のタイミングはブラウザが決定する。
+    window.requestAnimationFrame(mainLoop);
+</script>
+
+</body>
+</html>
